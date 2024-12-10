@@ -61,8 +61,27 @@ async def swagger_ui_html():
     status_code=status.HTTP_201_CREATED,
     response_model=TodoUserRead,
     tags=["User operations"],
-    summary="Create User.",
+    summary="Creates User.",
     description="Creates a new User.",
+    response_class=Response,
+    responses={
+        201: {
+            "description": "User successfully created.",
+            "content": {
+                "application/json": {
+                    "example": {"id": 1, "name": "user1"}
+                }
+            },
+        },
+        400: {
+            "description": "User already exists.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "User already exists."}
+                }
+            },
+        },
+    },
 )
 @limiter.limit("15/minute")
 def create_user(
@@ -91,6 +110,25 @@ def create_user(
     tags=["User operations"],
     summary="Delete User.",
     description="Deletes a User from the database.",
+    response_class=Response,
+    responses={
+        204: {
+            "description": "User successfully deleted.",
+            "content": {
+                "application/json": {
+                    "example": None
+                }
+            },
+        },
+        400: {
+            "description": "User doesn't exist.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "User {user_name} doesn't exist."}
+                }
+            },
+        },
+    },
 )
 @limiter.limit("15/minute")
 def delete_user(
@@ -117,6 +155,21 @@ def delete_user(
     "/users",
     response_model=TodoUserList,
     tags=["User operations"],
+    summary="Gets all Users",
+    description="Gets a lists of users",
+    response_class=Response,
+    responses={
+        200: {
+            "description": "List of users.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "users": [{"id": 1, "name": "user1"}, {"id": 2, "name": "user2"}]
+                    }
+                }
+            },
+        },
+    },
 )
 @limiter.limit("120/minute")
 def read_users(
@@ -136,6 +189,27 @@ def read_users(
     "/users/{user_name}",
     response_model=TodoUserReadWithItems,
     tags=["User operations"],
+    summary="Gets a User and its items",
+    description="Gets a User and its items by ID.",
+    response_class=Response,
+    responses={
+        200: {
+            "description": "User found.",
+            "content": {
+                "application/json": {
+                    "example": {"id": 1, "name": "user1", "items": []}
+                }
+            },
+        },
+        404: {
+            "description": "User not found.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "User {user_name} doesn't exist."}
+                }
+            },
+        },
+    },
 )
 @limiter.limit("120/minute")
 def read_user(
@@ -159,6 +233,27 @@ def read_user(
     response_model=TodoItemRead,
     status_code=status.HTTP_201_CREATED,
     tags=["Todo operations"],
+    summary="Creates a Todo item",
+    description="Creates a Todo item.",
+    response_class=Response,
+    responses={
+        201: {
+            "description": "Todo item successfully created.",
+            "content": {
+                "application/json": {
+                    "example": {"id": 1, "user_id": 1, "task": "New Task"}
+                }
+            },
+        },
+        404: {
+            "description": "User not found.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "User {user_name} doesn't exist."}
+                }
+            },
+        },
+    },
 )
 @limiter.limit("60/minute")
 def create_user_todo(
@@ -189,6 +284,19 @@ def create_user_todo(
     "/todos/{todo_id}",
     response_model=TodoItemRead,
     tags=["Todo operations"],
+    summary="Updates a Todo item",
+    description="Updates a Todo item by ID.",
+    response_class=Response,
+    responses={
+        404: {
+            "description": "Todo not found.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Todo #123 doesn't exist."}
+                }
+            },
+        },
+    },
 )
 @limiter.limit("120/minute")
 def update_user_todo(
@@ -215,6 +323,27 @@ def update_user_todo(
 @app.delete(
     "/todos/{todo_id}",
     tags=["Todo operations"],
+    summary="Delete a Todo item",
+    description="Deletes a Todo item by ID.",
+    response_class=Response,
+    responses={
+        204: {
+            "description": "Todo successfully deleted.",
+            "content": {
+                "application/json": {
+                    "example": None  
+                }
+            },
+        },
+        404: {
+            "description": "Todo not found.",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Todo #123 doesn't exist."}
+                }
+            },
+        },
+    },
 )
 @limiter.limit("120/minute")
 def delete_user_todo(
