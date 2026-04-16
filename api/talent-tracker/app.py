@@ -4,21 +4,49 @@ import os
 from uuid import uuid4
 from datetime import datetime
 from typing import Optional
-
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi import FastAPI, HTTPException, Query, Path, Body, status as http_status
 from fastapi.responses import JSONResponse, Response
 from pydantic import ValidationError, BaseModel, constr
 from .models import RecordCreate, RecordOut, NoteCreate, NoteOut
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 
 app = FastAPI(
 	title="Talent Tracker API",
-	description="API para gestión de talento.",
-	version="1.0.0"
+	description="API para gestión de talento. [Volver al Home](http://127.0.0.1:8000/)",
+	version="1.0.0",
+	docs_url=None,
+	openapi_tags=[
+		{
+			"name": "Records",
+			"description": "Operations on Talent Records.",
+		},
+		{
+			"name": "Notes",
+			"description": "Operations on Notes for a Record.",
+		}
+	]
 )
 
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-@app.get("/records")
+# Endpoint personalizado para Swagger UI con favicon global
+@app.get("/docs", include_in_schema=False)
+async def swagger_ui_html():
+	return get_swagger_ui_html(
+		title="4Geeks Playground - Talent Tracker API",
+		openapi_url="/tracker/api/v1/openapi.json",
+		swagger_favicon_url="/favicon.ico",
+		# swagger_css_url="/static/swagger-ui.css",
+	)
+
+
+@app.get("/records", tags=["Records"])
 def get_records(
 	status: str = Query(None, description="Filter by status: received, in_progress, selected, discarded"),
 	stage: str = Query(None, description="Filter by stage: pending, review, personal_interview, technical_interview, offer_presented"),
@@ -58,7 +86,7 @@ def get_records(
 	
 
 # Endpoint para obtener el detalle de un registro por id
-@app.get("/records/{id}")
+@app.get("/records/{id}", tags=["Records"])
 def get_record_by_id(id: str = Path(..., description="ID del registro")):
 	data_path = os.path.join(os.path.dirname(__file__), "data", "mock_data.json")
 	try:
@@ -89,7 +117,7 @@ def get_record_by_id(id: str = Path(..., description="ID del registro")):
 	return JSONResponse(status_code=404, content={"error": "Record not found"})
 
   
-@app.post("/records", status_code=201, response_model=RecordOut)
+@app.post("/records", status_code=201, response_model=RecordOut, tags=["Records"])
 def create_record(record: RecordCreate = Body(...)):
 	data_path = os.path.join(os.path.dirname(__file__), "data", "mock_data.json")
 	try:
@@ -137,7 +165,7 @@ def create_record(record: RecordCreate = Body(...)):
 
 
 # PUT /records/{id} - reemplaza datos editables
-@app.put("/records/{id}", response_model=RecordOut)
+@app.put("/records/{id}", response_model=RecordOut, tags=["Records"])
 def replace_record(
 	id: str = Path(..., description="ID del registro"),
 	record: RecordCreate = Body(...)
@@ -186,7 +214,7 @@ valid_status = {"received", "in_progress", "selected", "discarded"}
 valid_stage = {"pending", "review", "personal_interview", "technical_interview", "offer_presented"}
 
 
-@app.patch("/records/{id}", response_model=RecordOut)
+@app.patch("/records/{id}", response_model=RecordOut, tags=["Records"])
 def patch_record(
 	id: str = Path(..., description="ID del registro"),
 	patch: RecordPatch = Body(...)
@@ -230,7 +258,7 @@ def patch_record(
 
 
 # DELETE /records/{id}
-@app.delete("/records/{id}", status_code=204)
+@app.delete("/records/{id}", status_code=204, tags=["Records"])
 def delete_record(id: str = Path(..., description="ID del registro")):
 	data_path = os.path.join(os.path.dirname(__file__), "data", "mock_data.json")
 	try:
@@ -254,7 +282,7 @@ def delete_record(id: str = Path(..., description="ID del registro")):
 
 
 # GET /records/{id}/notes
-@app.get("/records/{id}/notes")
+@app.get("/records/{id}/notes", tags=["Notes"])
 def get_notes(id: str = Path(..., description="ID del registro")):
 	data_path = os.path.join(os.path.dirname(__file__), "data", "mock_data.json")
 	try:
@@ -274,7 +302,7 @@ def get_notes(id: str = Path(..., description="ID del registro")):
 
 
 # POST /records/{id}/notes
-@app.post("/records/{id}/notes", status_code=201)
+@app.post("/records/{id}/notes", status_code=201, tags=["Notes"])
 def add_note(
 	id: str = Path(..., description="ID del registro"),
 	note: NoteCreate = Body(...)
@@ -310,7 +338,7 @@ def add_note(
 
 
 # DELETE /records/{id}/notes/{note_id}
-@app.delete("/records/{id}/notes/{note_id}", status_code=204)
+@app.delete("/records/{id}/notes/{note_id}", status_code=204, tags=["Notes"])
 def delete_note(
 	id: str = Path(..., description="ID del registro"),
 	note_id: str = Path(..., description="ID de la nota")
