@@ -28,15 +28,20 @@ app.add_middleware(
     allow_credentials=['*'],
 )
 
+
 for mod in api.__all__:
     if re.search("pycache", mod.__name__):
         continue
-    name = re.sub("api\.", "", mod.__name__)
+    name = re.sub(r"api\.", "", mod.__name__)
     subapp: FastAPI = getattr(mod, "app")
     subapp.contact = {
         "email": "info@4geeks.com"
     }
-    app.mount(f"""/{name}""", subapp, name)
+    # Montar talent-tracker en /tracker/api/v1, el resto igual
+    if name == "talent-tracker":
+        app.mount("/tracker/api/v1", subapp, name)
+    else:
+        app.mount(f"/{name}", subapp, name)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
