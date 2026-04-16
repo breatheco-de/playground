@@ -28,15 +28,17 @@ app.add_middleware(
     allow_credentials=['*'],
 )
 
+
 for mod in api.__all__:
     if re.search("pycache", mod.__name__):
         continue
-    name = re.sub("api\.", "", mod.__name__)
+    name = re.sub(r"api\.", "", mod.__name__)
     subapp: FastAPI = getattr(mod, "app")
-    subapp.contact = {
-        "email": "info@4geeks.com"
-    }
-    app.mount(f"""/{name}""", subapp, name)
+    # Montar talent-tracker en /tracker/api/v1, el resto igual
+    if name == "talent-tracker":
+        app.mount("/tracker/api/v1", subapp, name)
+    else:
+        app.mount(f"/{name}", subapp, name)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -53,7 +55,11 @@ async def app_root(request: Request):
             continue
         name = re.sub("api\.", "", mod.__name__)
         mod_app = getattr(mod, "app", dict())
-        routes += f"""<li><a href="/{name}/docs">{getattr(mod_app, "title", "")}</a> - {getattr(mod_app, "description", "")}</li>"""
+        if name == "talent-tracker":
+            url = "/tracker/api/v1/docs"
+        else:
+            url = f"/{name}/docs"
+        routes += f"""<li><a href="{url}">{getattr(mod_app, "title", "")}</a> - {getattr(mod_app, "description", "")}</li>"""
     return HTMLResponse(
         content=re.sub(
             r"{{ content }}",
@@ -63,6 +69,8 @@ async def app_root(request: Request):
     )
 
 
+
+# Favicon global para toda la app (Swagger, etc.)
 @app.get('/favicon.ico', include_in_schema=False)
 async def favicon():
     return FileResponse("static/4geeks.ico")
