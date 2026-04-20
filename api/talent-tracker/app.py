@@ -16,7 +16,7 @@ from slowapi.errors import RateLimitExceeded
 
 app = FastAPI(
 	title="Talent Tracker API",
-	description='API para gestión de talento. <a href="/" target="_self">Volver al Home</a>',
+	description='API para gestión de talento. <a href="/" target="_self">⬅ Volver al Home</a>',
 	version="1.0.0",
 	docs_url=None,
 	openapi_tags=[

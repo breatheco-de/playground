@@ -25,7 +25,7 @@ from api.db import get_session
 
 app = FastAPI(
     title="Sound API",
-    description="An API serving sound files.",
+    description='An API serving sound files. <a href="/" target="_self">⬅ Volver al Home</a>',
     docs_url=None,
 )
 

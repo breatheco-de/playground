@@ -26,7 +26,7 @@ from api.db import get_session
 
 app = FastAPI(
     title="Contact List API",
-    description="An API for storing contacts.",
+    description='An API for storing contacts. <a href="/" target="_self">⬅ Volver al Home</a>',
     docs_url=None,
     openapi_tags=[
         {

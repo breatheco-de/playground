@@ -59,7 +59,7 @@ async def app_root(request: Request):
             url = "/tracker/api/v1/docs"
         else:
             url = f"/{name}/docs"
-        routes += f"""<li><a href="{url}">{getattr(mod_app, "title", "")}</a> - {getattr(mod_app, "description", "")}</li>"""
+        routes += f"""<li><a href="{url}">{getattr(mod_app, "title", "")}</a></li>"""
     return HTMLResponse(
         content=re.sub(
             r"{{ content }}",

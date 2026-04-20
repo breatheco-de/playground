@@ -26,7 +26,7 @@ from api.db import get_session
 
 app = FastAPI(
     title="Todo API",
-    description="An API for storing Todo Lists.",
+    description='An API for storing Todo Lists. <a href="/" target="_self">⬅ Volver al Home</a>',
     docs_url=None,
     openapi_tags=[
         {
