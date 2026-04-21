@@ -63,7 +63,6 @@ async def swagger_ui_html():
     tags=["User operations"],
     summary="Creates User.",
     description="Creates a new User.",
-    response_class=Response,
     responses={
         201: {
             "description": "User successfully created.",
@@ -157,7 +156,6 @@ def delete_user(
     tags=["User operations"],
     summary="Gets all Users",
     description="Gets a lists of users",
-    response_class=Response,
     responses={
         200: {
             "description": "List of users.",
@@ -191,7 +189,6 @@ def read_users(
     tags=["User operations"],
     summary="Gets a User and its items",
     description="Gets a User and its items by ID.",
-    response_class=Response,
     responses={
         200: {
             "description": "User found.",
@@ -235,7 +232,6 @@ def read_user(
     tags=["Todo operations"],
     summary="Creates a Todo item",
     description="Creates a Todo item.",
-    response_class=Response,
     responses={
         201: {
             "description": "Todo item successfully created.",
@@ -286,13 +282,12 @@ def create_user_todo(
     tags=["Todo operations"],
     summary="Updates a Todo item",
     description="Updates a Todo item by ID.",
-    response_class=Response,
     responses={
         404: {
             "description": "Todo not found.",
             "content": {
                 "application/json": {
-                    "example": {"detail": "Todo #123 doesn't exist."}
+                    "example": {"detail": "Todo not found"}
                 }
             },
         },
@@ -301,7 +296,7 @@ def create_user_todo(
 @limiter.limit("120/minute")
 def update_user_todo(
     request: Request,
-    todo_id: Annotated[int, Path(title="username")],
+    todo_id: Annotated[int, Path(title="todo id")],
     todo_data: TodoItemUpdate,
     session: Session = Depends(get_session)
 ):
@@ -309,7 +304,7 @@ def update_user_todo(
     if not todo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Todo #{todo_id} doesn't exist."
+            detail="Todo not found"
         )
     for k, v in todo_data:
         if v is not None:
@@ -339,7 +334,7 @@ def update_user_todo(
             "description": "Todo not found.",
             "content": {
                 "application/json": {
-                    "example": {"detail": "Todo #123 doesn't exist."}
+                    "example": {"detail": "Todo not found"}
                 }
             },
         },
@@ -355,7 +350,7 @@ def delete_user_todo(
     if not todo:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Todo #{todo_id} doesn't exist."
+            detail="Todo not found"
         )
     session.delete(todo)
     session.commit()

@@ -10,6 +10,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 import api
+from api.db import init_db
 
 template = None
 with open("./static/index.html", "r") as f:
@@ -47,13 +48,18 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
+@app.on_event("startup")
+def startup_db_init():
+    init_db()
+
+
 @app.get("/", include_in_schema=False)
 async def app_root(request: Request):
     routes = ""
     for mod in api.__all__:
         if re.search("pycache", mod.__name__):
             continue
-        name = re.sub("api\.", "", mod.__name__)
+        name = re.sub(r"api\.", "", mod.__name__)
         mod_app = getattr(mod, "app", dict())
         if name == "talent-tracker":
             url = "/tracker/api/v1/docs"

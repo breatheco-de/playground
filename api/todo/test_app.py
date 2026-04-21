@@ -90,6 +90,26 @@ def test_post_todos(session: Session, client: TestClient):
     assert data["id"] is not None
 
 
+def test_post_todos_returns_json_not_response_encoding_error(session: Session, client: TestClient):
+    user = TodoUser(name="deimian")
+    session.add(user)
+    session.commit()
+
+    resp = client.post(
+        "/todos/deimian",
+        json={
+            "label": "From production check",
+            "is_done": False,
+        }
+    )
+
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["label"] == "From production check"
+    assert data["is_done"] is False
+    assert isinstance(data["id"], int)
+
+
 def test_put_todos(session: Session, client: TestClient):
     sombra = TodoUser(name="sombra")
     session.add(sombra)

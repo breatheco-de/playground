@@ -6,7 +6,7 @@ import importlib
 __all__ = []
 
 for item in os.listdir(os.path.dirname(__file__)):
-    if re.search(f"\.py", item):
+    if re.search(r"\.py", item):
         continue
     mod_name = f"api.{item}"
     if mod_name in sys.modules:
